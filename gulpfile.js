@@ -6,9 +6,30 @@ const gulp = require('gulp'),
       connect = require('gulp-connect');
       watch = require('gulp-watch');
 
+
+const path = {
+  src: {
+    html: 'html/*.html',
+    less: 'html/less/*.less',
+    imgs: 'html/images/*.+(jpg|jpeg|png|gif)'
+  },
+  build: {
+    html: 'build/',
+    css: 'build/css/',
+    imgs: 'build/images/'
+  }, 
+  watch: {
+    html: 'html/*.html',
+    less: 'html/less/*.less',
+    imgs: 'html/images/*.+(jpg|jpeg|png|gif)'
+  }
+};
+
+path.src.less
+
 //Запуск вебсервера
 gulp.task('webserver', function() {
-  gulp.src('build/')
+  gulp.src(path.build.html)
     .pipe(webserver({
       livereload: false,
       port:8002,
@@ -18,43 +39,44 @@ gulp.task('webserver', function() {
 
 // Копирование HTML-файлов в папку build
 gulp.task("html", function() { 
-    return gulp.src("html/*.html")
-    .pipe(gulp.dest("build"));
-    .pipe(connect.reload());
+    return gulp.src(path.src.html)
+          .pipe(gulp.dest(path.build.html))
+          .pipe(connect.reload());
 });
 
 //Компиляция Less в Css
 gulp.task('less', function () {
-    return gulp.src('html/less/*.less')
+    return gulp.src(path.src.less)
         .pipe(less())
-        .pipe(gulp.dest('build/css'));
+        .pipe(gulp.dest(path.build.css))
         .pipe(connect.reload());
 });
 
 // Сжимаем картинки
 gulp.task('imgs', function() {
-    return gulp.src("html/images/*.+(jpg|jpeg|png|gif)")
+    return gulp.src(path.src.imgs)
         .pipe(imagemin({
             progressive: true,
             svgoPlugins: [{ removeViewBox: false }],
             interlaced: true
         }))
-        .pipe(gulp.dest("build/images"));
+        .pipe(gulp.dest(path.build.imgs))
         .pipe(connect.reload());
 });
 
 
 // Задача слежения за измененными файлами
 gulp.task("watch", function() {
-    gulp.watch("html/*.html", ["html"]);
-    gulp.watch("html/less/*.less", ["less"]);
-    gulp.watch("html/images/*.+(jpg|jpeg|png|gif)", ["imgs"]);
+    gulp.watch(path.watch.html, gulp.series([
+    'html']));
+    gulp.watch(path.watch.less, gulp.series(["less"]));
+    gulp.watch(path.watch.imgs, gulp.series(["imgs"]))
 });
 
 gulp.task(
   'default',
   gulp.series([
   
-    'html', 'less', 'imgs', 'webserver', 'watch'
+    'html', 'less', 'imgs', 'watch'
   ])
 );
